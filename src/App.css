@@ -65,8 +65,10 @@ html {
     content: "";
     @apply border-[1px] border-primary absolute left-0 top-[48%] w-[10px] h-[10px] rotate-45 -translate-y-1/2 hidden;
   }
-  &:hover::before {
-    @apply block;
+  @media (min-width: 768px) {
+    &:hover::before {
+      @apply block;
+    }
   }
 }
 .menu-link.active {

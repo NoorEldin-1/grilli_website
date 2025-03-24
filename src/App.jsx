@@ -96,7 +96,7 @@ function App() {
           key={i}
           className={`menu-link ${
             i === 0 ? "active pl-8 text-primary" : ""
-          } capitalize border-b-2 border-white/25 py-4 duration-300 hover:pl-8 hover:text-primary relative`}
+          } capitalize border-b-2 border-white/25 py-4 duration-300 md:hover:pl-8 hover:text-primary relative`}
         >
           {e}
         </a>
@@ -425,7 +425,7 @@ function App() {
       >
         <Intro />
         <Menu />
-        <div className="h-screen">
+        <div className="h-screen overflow-hidden">
           <TopBar />
           <NavBar />
           <Landing />
@@ -444,7 +444,6 @@ function App() {
     </>
   );
 }
-
 export default App;
 const Intro = () => {
   const { isIntro } = useContext(newContextApi);
@@ -453,7 +452,7 @@ const Intro = () => {
       <motion.div
         animate={{ y: "100%", opacity: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="bg-primary fixed w-screen h-screen grid place-content-center place-items-center z-20"
+        className="bg-primary fixed w-screen h-screen grid place-content-center place-items-center z-50"
       >
         <motion.div
           animate={{
@@ -479,7 +478,7 @@ const Menu = () => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: "-100%", opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed w-screen h-screen bg-black/50 z-20"
+          className="fixed w-screen h-screen bg-black/50 z-50"
         >
           <div className="bg-main-black max-w-[350px] h-full p-5 overflow-y-auto">
             <div
@@ -565,18 +564,24 @@ const NavBar = () => {
   const { navRef, links, menuBars, setIsMenu, lastScroll, setLastScroll } =
     useContext(newContextApi);
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > lastScroll) {
-      navRef.current.classList.add("top-[-100%]");
-      navRef.current.classList.replace("bg-transparent", "bg-main-black");
-    } else if (window.scrollY === 0) {
-      navRef.current.classList.remove("top-[-100%]", "top-0");
-      navRef.current.classList.replace("bg-main-black", "bg-transparent");
-    } else {
-      navRef.current.classList.replace("top-[-100%]", "top-0");
-    }
-    setLastScroll(window.scrollY);
-  });
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > lastScroll) {
+        navRef.current.classList.add("top-[-100%]");
+        navRef.current.classList.replace("bg-transparent", "bg-main-black");
+      } else if (window.scrollY === 0) {
+        navRef.current.classList.remove("top-[-100%]", "top-0");
+        navRef.current.classList.replace("bg-main-black", "bg-transparent");
+      } else {
+        navRef.current.classList.replace("top-[-100%]", "top-0");
+      }
+      setLastScroll(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScroll, navRef, setLastScroll]);
 
   return (
     <div
@@ -607,7 +612,7 @@ const Landing = () => {
   return (
     <div className="w-full h-full bg-black/50 absolute top-0 left-0">
       {landingData[landing]}
-      <div className="absolute bottom-[40px] right-[40px] w-[125px] h-[125px]">
+      <div className="absolute bottom-[40px] right-[40px] w-[105px] h-[105px]">
         <motion.div
           initial={{ rotate: 0 }}
           animate={{ rotate: 360 }}
@@ -678,13 +683,15 @@ const Dishes = () => {
 const Story = () => {
   const moveDivRef = useRef(null);
   useEffect(() => {
-    document.addEventListener("mousemove", (e) => {
-      moveDivRef.current.style.top = `${e.clientY * 0.02}px`;
-      moveDivRef.current.style.left = `${e.clientX * 0.02}px`;
-    });
+    const handleMouseMove = (e) => {
+      moveDivRef.current.style.top = `${e.clientY * 0.01}px`;
+      moveDivRef.current.style.left = `${e.clientX * 0.01}px`;
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
   return (
-    <div className="bg-second-black max-sm:px-14 py-[120px] sm:px-28 grid gap-24 lg:grid-cols-2 relative">
+    <div className="bg-second-black max-sm:px-14 py-[120px] sm:px-28 grid gap-24 lg:grid-cols-2 relative overflow-hidden">
       <img
         src={shapeStory}
         alt=""
@@ -1173,17 +1180,26 @@ const Footer = () => {
   );
 };
 const ScrollToTop = () => {
+  const [scrollValue, setScrollValue] = useState("hide");
+  useEffect(() => {
+    const handleScrollToTop = () => {
+      if (window.scrollY > 100) {
+        setScrollValue("show");
+      } else {
+        setScrollValue("hide");
+      }
+    };
+    window.addEventListener("scroll", handleScrollToTop);
+    return () => window.removeEventListener("scroll", handleScrollToTop);
+  }, []);
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      animate={scrollValue === "show" ? { x: 0 } : { x: "100vh" }}
+      transition={{ duration: 0.3 }}
       onClick={() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
-      className={`${
-        window.scrollY > 200 ? "" : "hidden"
-      } fixed bottom-[30px] right-[30px] w-[40px] h-[40px] cursor-pointer border-2 border-primary rounded-full text-center content-center text-primary duration-300 hover:text-black hover:bg-primary z-40`}
+      className={`fixed bottom-[30px] right-[30px] w-[40px] h-[40px] cursor-pointer border-2 border-primary rounded-full text-center content-center text-primary duration-300 hover:text-black hover:bg-primary z-40`}
     >
       <FontAwesomeIcon icon={faAngleUp} />
     </motion.div>
